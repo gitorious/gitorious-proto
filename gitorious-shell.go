@@ -91,6 +91,8 @@ func formatGitShellCommand(command, repoPath string) string {
 func execGitShell(command string) (string, error) {
 	var stderrBuf bytes.Buffer
 	cmd := exec.Command("git-shell", "-c", command)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
 	cmd.Stderr = &stderrBuf
 
 	if err := cmd.Run(); err != nil {
