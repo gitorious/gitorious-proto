@@ -15,6 +15,11 @@ import (
 	"syscall"
 )
 
+func say(s string, args ...interface{}) {
+	// print message to stderr, prefixed with colored "+-" gitorious "logo" ;)
+	fmt.Fprintf(os.Stderr, "\x1b[1;32m+\x1b[31m-\x1b[0m %v\n", fmt.Sprintf(s, args...))
+}
+
 func getenv(name, defaultValue string) string {
 	value := os.Getenv(name)
 
@@ -107,7 +112,7 @@ func main() {
 	log.Printf("client connected")
 
 	if len(os.Args) < 2 {
-		fmt.Println("Error occured, please contact support")
+		say("Error occured, please contact support")
 		log.Fatalf("username argument missing, check .authorized_keys file")
 	}
 
@@ -115,25 +120,25 @@ func main() {
 
 	ssh_original_command := strings.Trim(os.Getenv("SSH_ORIGINAL_COMMAND"), " \n")
 	if ssh_original_command == "" { // deny regular ssh login attempts
-		fmt.Printf("Hey %v! Sorry, Gitorious doesn't provide shell access. Bye!\n", username)
+		say("Hey %v! Sorry, Gitorious doesn't provide shell access. Bye!", username)
 		log.Fatalf("SSH_ORIGINAL_COMMAND missing, aborting...")
 	}
 
 	command, repoPath, err := parseGitCommand(ssh_original_command)
 	if err != nil {
-		fmt.Println("Invalid git-shell command")
+		say("Invalid git-shell command")
 		log.Fatalf("%v, aborting...", err)
 	}
 
 	realRepoPath, err := getRealRepoPath(repoPath, username, apiUrl)
 	if err != nil {
-		fmt.Println("Access denied or invalid repository path")
+		say("Access denied or invalid repository path")
 		log.Fatalf("%v, aborting...", err)
 	}
 
 	fullRepoPath, err := getFullRepoPath(realRepoPath, reposRootPath)
 	if err != nil {
-		fmt.Println("Fatal error, please contact support")
+		say("Fatal error, please contact support")
 		log.Fatalf("%v, aborting...", err)
 	}
 
@@ -143,7 +148,7 @@ func main() {
 	syscall.Umask(0022) // set umask for pushes
 
 	if stderr, err := execGitShell(gitShellCommand); err != nil {
-		fmt.Println("Fatal error, please contact support")
+		say("Fatal error, please contact support")
 		log.Printf("error occured in git-shell: %v", err)
 		log.Fatalf("stderr: %v", stderr)
 	}
