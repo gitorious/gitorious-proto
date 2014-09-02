@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -46,8 +48,24 @@ func parseGitCommand(fullCommand string) (string, string, error) {
 	return matches[1], matches[4], nil
 }
 
-func getRealRepoPath(repoPath string) (string, error) {
-	return "real/path.git", nil
+func getRealRepoPath(repoPath, username, apiUrl string) (string, error) {
+	url := fmt.Sprintf("%v?username=%v&path=%v", apiUrl, username, repoPath)
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return "", errors.New(fmt.Sprintf("got status %v from API", resp.StatusCode))
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(body), nil
 }
 
 func getFullRepoPath(repoPath, reposRootPath string) (string, error) {
@@ -81,6 +99,7 @@ func main() {
 	clientId := getenv("SSH_CLIENT", "local")
 	logfilePath := getenv("LOGFILE", "/tmp/gitorious-shell.log")
 	reposRootPath := getenv("REPOSITORIES", "/var/www/gitorious/repositories")
+	apiUrl := getenv("API_URL", "http://localhost:8080/foo")
 
 	closeLogger := configureLogger(logfilePath, clientId)
 	defer closeLogger()
@@ -106,7 +125,7 @@ func main() {
 		log.Fatalf("%v, aborting...", err)
 	}
 
-	realRepoPath, err := getRealRepoPath(repoPath)
+	realRepoPath, err := getRealRepoPath(repoPath, username, apiUrl)
 	if err != nil {
 		fmt.Println("Access denied or invalid repository path")
 		log.Fatalf("%v, aborting...", err)
