@@ -67,7 +67,7 @@ func TestGetRealRepoPath(t *testing.T) {
 		if success {
 			username := r.URL.Query().Get("username")
 			realPath := strings.ToUpper(r.URL.Query().Get("path"))
-			fmt.Fprint(w, fmt.Sprintf("%v@%v", username, realPath))
+			fmt.Fprint(w, fmt.Sprintf("%v@%v\n", username, realPath))
 		} else {
 			http.Error(w, "nope", http.StatusForbidden)
 		}

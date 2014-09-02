@@ -70,7 +70,7 @@ func getRealRepoPath(repoPath, username, apiUrl string) (string, error) {
 		return "", err
 	}
 
-	return string(body), nil
+	return strings.Trim(string(body), " \n"), nil
 }
 
 func getFullRepoPath(repoPath, reposRootPath string) (string, error) {
