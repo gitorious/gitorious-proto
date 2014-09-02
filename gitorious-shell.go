@@ -42,7 +42,7 @@ func configureLogger(logfilePath, clientId string) func() {
 	return func() { f.Close() }
 }
 
-var gitCommandRegexp = regexp.MustCompile("^(git(-|\\s)(receive-pack|upload-pack|upload-archive))\\s+'([^']+)'$")
+var gitCommandRegexp = regexp.MustCompile("^(git(-|\\s)(receive-pack|upload-pack|upload-archive))\\s+'/?([^']+)'$")
 
 func parseGitCommand(fullCommand string) (string, string, error) {
 	matches := gitCommandRegexp.FindStringSubmatch(fullCommand)

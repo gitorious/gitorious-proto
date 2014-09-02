@@ -18,11 +18,13 @@ func TestParseGitCommand(t *testing.T) {
 		expectedError   bool
 	}{
 		{"git-upload-pack 'the/path.git'", "git-upload-pack", "the/path.git", false},
+		{"git-upload-pack '/the/path.git'", "git-upload-pack", "the/path.git", false},
 		{"git upload-pack  'the/path.git'", "git upload-pack", "the/path.git", false},
 		{"git-receive-pack 'the/path.git'", "git-receive-pack", "the/path.git", false},
 		{"git receive-pack 'the/path.git'", "git receive-pack", "the/path.git", false},
 		{"git-upload-archive 'the/path.git'", "git-upload-archive", "the/path.git", false},
 		{"git upload-archive 'the/path.git'", "git upload-archive", "the/path.git", false},
+		{"git-upload-archive ''", "", "", true},
 		{"git update-ref 'the/path.git'", "", "", true},
 		{"git-upload-pack the/path.git", "", "", true},
 		{"cvs server 'the/path.git'", "", "", true},
