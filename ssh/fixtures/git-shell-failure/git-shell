@@ -1,4 +1,5 @@
 #!/bin/sh
 
 echo "$@" >&2
+env | grep GITORIOUS | sort >&2
 exit 1

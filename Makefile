@@ -1,7 +1,7 @@
 .PHONY: build test
 
 build: test
-	go build
+	go build ./...
 
 test:
-	go test
+	go test ./...

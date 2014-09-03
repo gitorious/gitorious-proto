@@ -1,18 +1,17 @@
-package main
+package ssh
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"syscall"
+
+	"gitorious.org/gitorious/gitorious-shell/common"
 )
 
 func say(s string, args ...interface{}) {
@@ -53,44 +52,20 @@ func parseGitCommand(fullCommand string) (string, string, error) {
 	return matches[1], matches[4], nil
 }
 
-func getRealRepoPath(repoPath, username, apiUrl string) (string, error) {
-	url := fmt.Sprintf("%v?username=%v&path=%v", apiUrl, username, repoPath)
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return "", errors.New(fmt.Sprintf("got status %v from API", resp.StatusCode))
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	return strings.Trim(string(body), " \n"), nil
-}
-
-func getFullRepoPath(repoPath, reposRootPath string) (string, error) {
-	fullRepoPath := filepath.Join(reposRootPath, repoPath)
-
-	preReceiveHookPath := filepath.Join(fullRepoPath, "hooks", "pre-receive")
-	if info, err := os.Stat(preReceiveHookPath); err != nil || info.Mode()&0111 == 0 {
-		return "", errors.New("pre-receive hook is missing or is not executable")
-	}
-
-	return fullRepoPath, nil
-}
-
 func formatGitShellCommand(command, repoPath string) string {
 	return fmt.Sprintf("%v '%v'", command, repoPath)
 }
 
-func execGitShell(command string) (string, error) {
+func execGitShell(command, username string) (string, error) {
+	syscall.Umask(0022) // set umask for pushes
+
+	env := os.Environ()
+	env = append(env, "GITORIOUS_PROTO=ssh")
+	env = append(env, "GITORIOUS_USER="+username) // utilized by hooks
+
 	var stderrBuf bytes.Buffer
 	cmd := exec.Command("git-shell", "-c", command)
+	cmd.Env = env
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = &stderrBuf
@@ -120,40 +95,38 @@ func main() {
 
 	username := os.Args[1]
 
-	ssh_original_command := strings.Trim(os.Getenv("SSH_ORIGINAL_COMMAND"), " \n")
-	if ssh_original_command == "" { // deny regular ssh login attempts
+	sshCommand := strings.Trim(os.Getenv("SSH_ORIGINAL_COMMAND"), " \n")
+	if sshCommand == "" { // deny regular ssh login attempts
 		say("Hey %v! Sorry, Gitorious doesn't provide shell access. Bye!", username)
 		log.Fatalf("SSH_ORIGINAL_COMMAND missing, aborting...")
 	}
 
-	command, repoPath, err := parseGitCommand(ssh_original_command)
+	command, repoPath, err := parseGitCommand(sshCommand)
 	if err != nil {
-		say("Invalid git-shell command")
+		say("Invalid command")
 		log.Fatalf("%v, aborting...", err)
 	}
 
-	realRepoPath, err := getRealRepoPath(repoPath, username, apiUrl)
+	realRepoPath, err := common.GetRealRepoPath(repoPath, username, apiUrl)
 	if err != nil {
 		say("Access denied or invalid repository path")
 		log.Fatalf("%v, aborting...", err)
 	}
 
-	fullRepoPath, err := getFullRepoPath(realRepoPath, reposRootPath)
+	fullRepoPath, err := common.GetFullRepoPath(realRepoPath, reposRootPath)
 	if err != nil {
 		say("Fatal error, please contact support")
 		log.Fatalf("%v, aborting...", err)
 	}
 
 	gitShellCommand := formatGitShellCommand(command, fullRepoPath)
-	log.Printf("invoking git-shell with \"%v\"", gitShellCommand)
+	log.Printf("invoking git-shell with command \"%v\"", gitShellCommand)
 
-	syscall.Umask(0022) // set umask for pushes
-
-	if stderr, err := execGitShell(gitShellCommand); err != nil {
+	if stderr, err := execGitShell(gitShellCommand, username); err != nil {
 		say("Fatal error, please contact support")
 		log.Printf("error occured in git-shell: %v", err)
 		log.Fatalf("stderr: %v", stderr)
 	}
 
-	log.Printf("client disconnected, all ok")
+	log.Printf("done")
 }
