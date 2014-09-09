@@ -12,12 +12,14 @@ import (
 
 func GetRealRepoPath(repoPath, username, apiUrl string) (string, error) {
 	url := fmt.Sprintf("%v?username=%v&path=%v", apiUrl, username, repoPath)
+	fmt.Println(url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
 
+	fmt.Println(resp.StatusCode)
 	if resp.StatusCode != 200 {
 		return "", errors.New(fmt.Sprintf("got status %v from API", resp.StatusCode))
 	}
@@ -26,6 +28,7 @@ func GetRealRepoPath(repoPath, username, apiUrl string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(string(body))
 
 	return strings.Trim(string(body), " \n"), nil
 }

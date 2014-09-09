@@ -1,4 +1,4 @@
-package http
+package main
 
 // The following code is taken from https://codereview.appspot.com/76540043/patch/160001/170001.
 // This will be part of net/http stdlib package in next Go release.
