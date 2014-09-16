@@ -3,7 +3,7 @@ package common
 import (
 	"os"
 
-	"gitorious.org/gitorious/gitorious-shell/api"
+	"gitorious.org/gitorious/gitorious-proto/api"
 )
 
 func CreateEnv(protocol, username string, repoConfig *api.RepoConfig) []string {

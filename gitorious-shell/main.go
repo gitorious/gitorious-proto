@@ -13,8 +13,8 @@ import (
 	"strings"
 	"syscall"
 
-	"gitorious.org/gitorious/gitorious-shell/api"
-	"gitorious.org/gitorious/gitorious-shell/common"
+	"gitorious.org/gitorious/gitorious-proto/api"
+	"gitorious.org/gitorious/gitorious-proto/common"
 )
 
 func say(s string, args ...interface{}) {
