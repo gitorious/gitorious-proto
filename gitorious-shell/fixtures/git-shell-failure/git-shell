@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "such error" >&2
+exit 1

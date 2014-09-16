@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo "$@"
+env | grep JOLA
+cat
+
+exit 0

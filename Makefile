@@ -1,7 +1,12 @@
-.PHONY: build test
+.PHONY: test build build-ssh build-http
 
-build: test
-	go build
+build: build-ssh build-http
+
+build-ssh:
+	cd gitorious-shell && go build
+
+build-http:
+	cd gitorious-http-backend && go build
 
 test:
-	go test
+	go test ./...
