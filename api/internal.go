@@ -65,7 +65,5 @@ func (a *GitoriousInternalApi) getJson(path string, target interface{}) error {
 		return err
 	}
 
-	fmt.Printf("%v\n", target)
-
 	return nil
 }
