@@ -72,8 +72,8 @@ func main() {
 
 	clientId := common.Getenv("SSH_CLIENT", "local")
 	logfilePath := common.Getenv("LOGFILE", "/tmp/gitorious-shell.log")
-	reposRootPath := common.Getenv("REPOSITORIES", "/var/www/gitorious/repositories")
-	internalApiUrl := common.Getenv("API_URL", "http://localhost:3000/api/internal")
+	reposRootPath := common.Getenv("REPOSITORIES_ROOT", "/var/www/gitorious/repositories")
+	internalApiUrl := common.Getenv("INTERNAL_API_URL", "http://localhost:3000/api/internal")
 
 	logger := getLogger(logfilePath, clientId)
 	internalApi := &api.GitoriousInternalApi{internalApiUrl}
