@@ -31,7 +31,7 @@ func assertAbsence(env []string, notExpected string, t *testing.T) {
 func TestCreateEnv(t *testing.T) {
 	repoConfig := &api.RepoConfig{}
 
-	env := CreateEnv("ssh", "sickill", repoConfig)
+	env := CreateEnv("ssh", "sickill", "the/path.git", repoConfig)
 
 	// make sure it is based on the existing environment
 	assertPresence(env, "HOME="+os.Getenv("HOME"), t)
@@ -39,6 +39,7 @@ func TestCreateEnv(t *testing.T) {
 	// ensure required vars are set
 	assertPresence(env, "GITORIOUS_PROTO=ssh", t)
 	assertPresence(env, "GITORIOUS_USER=sickill", t)
+	assertPresence(env, "GITORIOUS_REPOSITORY_PATH=the/path.git", t)
 
 	// ensure optional vars are not set
 	assertAbsence(env, "GITORIOUS_SSH_CLONE_URL", t)
@@ -58,7 +59,7 @@ func TestCreateEnv(t *testing.T) {
 		CustomUpdatePath:      "custom-update",
 	}
 
-	env = CreateEnv("ssh", "sickill", repoConfig)
+	env = CreateEnv("ssh", "sickill", "the/path.git", repoConfig)
 
 	// ensure optional vars are not set
 	assertPresence(env, "GITORIOUS_SSH_CLONE_URL=ssh-clone-url", t)

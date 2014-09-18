@@ -6,11 +6,13 @@ import (
 	"gitorious.org/gitorious/gitorious-proto/api"
 )
 
-func CreateEnv(protocol, username string, repoConfig *api.RepoConfig) []string {
+func CreateEnv(protocol, username, repoPath string, repoConfig *api.RepoConfig) []string {
 	env := os.Environ()
 
+	// used by hooks
 	env = append(env, "GITORIOUS_PROTO="+protocol)
-	env = append(env, "GITORIOUS_USER="+username) // used by hooks
+	env = append(env, "GITORIOUS_USER="+username)
+	env = append(env, "GITORIOUS_REPOSITORY_PATH="+repoPath)
 
 	if repoConfig.SshCloneUrl != "" {
 		env = append(env, "GITORIOUS_SSH_CLONE_URL="+repoConfig.SshCloneUrl)
