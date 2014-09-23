@@ -45,7 +45,7 @@ func getLogger(logfilePath, clientId string) *log.Logger {
 		writer = ioutil.Discard
 	}
 
-	return log.New(writer, fmt.Sprintf("[%v] ", clientId), 0)
+	return log.New(writer, fmt.Sprintf("[%v] ", clientId), log.LstdFlags)
 }
 
 func createSshEnv(username, repoPath string, repoConfig *api.RepoConfig) []string {
