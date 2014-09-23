@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 type RepoConfig struct {
@@ -28,20 +29,27 @@ type GitoriousInternalApi struct {
 }
 
 func (a *GitoriousInternalApi) GetRepoConfig(repoPath, username string) (*RepoConfig, error) {
-	path := fmt.Sprintf("/repo-config?repo_path=%v&username=%v", repoPath, username)
+	u, err := url.Parse(a.ApiUrl + "/repo-config")
+	if err != nil {
+		return nil, err
+	}
+
+	q := u.Query()
+	q.Set("repo_path", repoPath)
+	q.Set("username", username)
+	u.RawQuery = q.Encode()
+
 	var repoConfig RepoConfig
 
-	if err := a.getJson(path, &repoConfig); err != nil {
+	if err := a.getJson(u, &repoConfig); err != nil {
 		return nil, err
 	}
 
 	return &repoConfig, nil
 }
 
-func (a *GitoriousInternalApi) getJson(path string, target interface{}) error {
-	url := a.ApiUrl + path
-
-	request, err := http.NewRequest("GET", url, nil)
+func (a *GitoriousInternalApi) getJson(u *url.URL, target interface{}) error {
+	request, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return err
 	}
@@ -56,7 +64,7 @@ func (a *GitoriousInternalApi) getJson(path string, target interface{}) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("got status %v from %v", response.StatusCode, url))
+		return errors.New(fmt.Sprintf("got status %v from %v", response.StatusCode, u))
 	}
 
 	decoder := json.NewDecoder(response.Body)
