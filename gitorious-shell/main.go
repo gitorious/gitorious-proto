@@ -112,7 +112,7 @@ func main() {
 
 	fullRepoPath, err := repositoryStore.GetFullRepoPath(repoConfig.RealPath)
 	if err != nil {
-		say("Fatal error, please contact support")
+		say("Error occurred, please contact support")
 		logger.Fatalf("%v, aborting...", err)
 	}
 
@@ -122,7 +122,7 @@ func main() {
 	logger.Printf(`invoking git-shell with command "%v"`, gitShellCommand)
 
 	if stderr, err := execGitShell(gitShellCommand, env, os.Stdin, os.Stdout); err != nil {
-		say("Fatal error, please contact support")
+		say("Error occurred, please contact support")
 		logger.Printf("error occured in git-shell: %v", err)
 		logger.Fatalf("stderr: %v", stderr)
 	}
