@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Fake "git" command, used to check env variables and if it's called with
+# "http-backend" subcommand.
+
+[[ $1 == "http-backend" ]] || exit 1
+
+echo -e "Content-type: text/plain\n"
+
+env | egrep "PATH_TRANSLATED|QUERY_STRING|REMOTE_USER|GIT_HTTP_EXPORT_ALL" | sort
