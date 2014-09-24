@@ -86,6 +86,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	if req.URL.Query().Get("service") == "git-receive-pack" && username == "" {
+		requestBasicAuth(w, "Anonymous pushing not allowed")
+		logger.Printf("denying anonymous push, requesting basic auth, disconnecting...")
+		return
+	}
+
 	repoPath, slug, err := parsePath(req.URL.Path)
 	if err != nil {
 		say(w, http.StatusBadRequest, "Invalid command")
