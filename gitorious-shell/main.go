@@ -89,6 +89,8 @@ func main() {
 	}
 
 	username := os.Args[1]
+	logger.Printf("user authenticated as %v", username)
+
 	sshCommand := strings.Trim(os.Getenv("SSH_ORIGINAL_COMMAND"), " \n")
 
 	if sshCommand == "" { // deny regular ssh login attempts

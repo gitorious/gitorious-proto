@@ -79,6 +79,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		if user != nil {
 			username = user.Username
+			logger.Printf("user authenticated as %v", username)
 		} else {
 			requestBasicAuth(w, "Invalid username or password")
 			logger.Printf("invalid credentials, requesting basic auth, disconnecting...")
