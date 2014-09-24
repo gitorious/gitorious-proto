@@ -145,6 +145,8 @@ func main() {
 	internalApi := &api.GitoriousInternalApi{*internalApiUrl}
 	repositoryStore := &common.GitoriousRepositoryStore{*reposRootPath}
 
+	logger.Printf("listening on %v", *addr)
+
 	http.Handle("/", &Handler{logger, internalApi, repositoryStore})
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
