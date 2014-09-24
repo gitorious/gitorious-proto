@@ -63,7 +63,9 @@ type Handler struct {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	h.logger.Printf("client connected")
+	logger := &common.SessionLogger{h.logger, req.RemoteAddr}
+
+	logger.Printf("client connected")
 
 	var username string
 
@@ -71,7 +73,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		user, err := h.internalApi.AuthenticateUser(usernameOrEmail, password)
 		if err != nil {
 			say(w, http.StatusInternalServerError, "Error occured, please contact support")
-			h.logger.Printf("%v, disconnecting...", err)
+			logger.Printf("%v, disconnecting...", err)
 			return
 		}
 
@@ -79,7 +81,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			username = user.Username
 		} else {
 			requestBasicAuth(w, "Invalid username or password")
-			h.logger.Printf("invalid credentials, disconnecting...")
+			logger.Printf("invalid credentials, disconnecting...")
 			return
 		}
 	}
@@ -87,7 +89,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	repoPath, slug, err := parsePath(req.URL.Path)
 	if err != nil {
 		say(w, http.StatusBadRequest, "Invalid command")
-		h.logger.Printf("%v, disconnecting...", err)
+		logger.Printf("%v, disconnecting...", err)
 		return
 	}
 
@@ -96,37 +98,37 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if httpErr, ok := err.(*api.HttpError); ok {
 			if httpErr.StatusCode == 403 {
 				requestBasicAuth(w, "Access denied")
-				h.logger.Printf("%v, disconnecting...", err)
+				logger.Printf("%v, disconnecting...", err)
 				return
 			} else if httpErr.StatusCode == 404 {
 				say(w, http.StatusNotFound, "Invalid repository path")
-				h.logger.Printf("%v, disconnecting...", err)
+				logger.Printf("%v, disconnecting...", err)
 				return
 			}
 		}
 
 		say(w, http.StatusInternalServerError, "Error occured, please contact support")
-		h.logger.Printf("%v, disconnecting...", err)
+		logger.Printf("%v, disconnecting...", err)
 		return
 	}
 
-	h.logger.Printf("real repo path: %v", repoConfig.RealPath)
+	logger.Printf("real repo path: %v", repoConfig.RealPath)
 
 	fullRepoPath, err := h.repositoryStore.GetFullRepoPath(repoConfig.RealPath)
 	if err != nil {
 		say(w, http.StatusInternalServerError, "Error occurred, please contact support")
-		h.logger.Printf("%v, disconnecting...", err)
+		logger.Printf("%v, disconnecting...", err)
 		return
 	}
 
 	translatedPath := fullRepoPath + slug
 	env := createHttpEnv(username, repoPath, repoConfig, translatedPath)
 
-	h.logger.Printf(`invoking git-http-backend with translated path "%v"`, translatedPath)
+	logger.Printf(`invoking git-http-backend with translated path "%v"`, translatedPath)
 
 	execGitHttpBackend(env, w, req)
 
-	h.logger.Printf("done")
+	logger.Printf("done")
 }
 
 func main() {

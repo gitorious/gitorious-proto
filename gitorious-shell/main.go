@@ -37,7 +37,7 @@ func formatGitShellCommand(command, repoPath string) string {
 	return fmt.Sprintf("%v '%v'", command, repoPath)
 }
 
-func getLogger(logfilePath, clientId string) *log.Logger {
+func getLogger(logfilePath, clientId string) common.Logger {
 	var writer io.Writer
 
 	writer, err := os.OpenFile(logfilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -45,7 +45,8 @@ func getLogger(logfilePath, clientId string) *log.Logger {
 		writer = ioutil.Discard
 	}
 
-	return log.New(writer, fmt.Sprintf("[%v] ", clientId), log.LstdFlags)
+	targetLogger := log.New(writer, "", log.LstdFlags)
+	return &common.SessionLogger{targetLogger, clientId}
 }
 
 func createSshEnv(username, repoPath string, repoConfig *api.RepoConfig) []string {
@@ -83,7 +84,8 @@ func main() {
 
 	if len(os.Args) < 2 {
 		say("Error occured, please contact support")
-		logger.Fatalf("username argument missing, check .authorized_keys file")
+		logger.Printf("username argument missing, check .authorized_keys file")
+		os.Exit(1)
 	}
 
 	username := os.Args[1]
@@ -91,7 +93,8 @@ func main() {
 
 	if sshCommand == "" { // deny regular ssh login attempts
 		say("Hey %v! Sorry, Gitorious doesn't provide shell access. Bye!", username)
-		logger.Fatalf("SSH_ORIGINAL_COMMAND missing, aborting...")
+		logger.Printf("SSH_ORIGINAL_COMMAND missing, aborting...")
+		os.Exit(1)
 	}
 
 	logger.Printf("processing command: %v", sshCommand)
@@ -99,7 +102,8 @@ func main() {
 	command, repoPath, err := parseGitShellCommand(sshCommand)
 	if err != nil {
 		say("Invalid command")
-		logger.Fatalf("%v, aborting...", err)
+		logger.Printf("%v, aborting...", err)
+		os.Exit(1)
 	}
 
 	repoConfig, err := internalApi.GetRepoConfig(repoPath, username)
@@ -107,15 +111,18 @@ func main() {
 		if httpErr, ok := err.(*api.HttpError); ok {
 			if httpErr.StatusCode == 403 {
 				say("Access denied")
-				logger.Fatalf("%v, aborting...", err)
+				logger.Printf("%v, aborting...", err)
+				os.Exit(1)
 			} else if httpErr.StatusCode == 404 {
 				say("Invalid repository path")
-				logger.Fatalf("%v, aborting...", err)
+				logger.Printf("%v, aborting...", err)
+				os.Exit(1)
 			}
 		}
 
 		say("Error occured, please contact support")
-		logger.Fatalf("%v, aborting...", err)
+		logger.Printf("%v, aborting...", err)
+		os.Exit(1)
 	}
 
 	logger.Printf("real repo path: %v", repoConfig.RealPath)
@@ -123,7 +130,8 @@ func main() {
 	fullRepoPath, err := repositoryStore.GetFullRepoPath(repoConfig.RealPath)
 	if err != nil {
 		say("Error occurred, please contact support")
-		logger.Fatalf("%v, aborting...", err)
+		logger.Printf("%v, aborting...", err)
+		os.Exit(1)
 	}
 
 	gitShellCommand := formatGitShellCommand(command, fullRepoPath)
@@ -134,7 +142,8 @@ func main() {
 	if stderr, err := execGitShell(gitShellCommand, env, os.Stdin, os.Stdout); err != nil {
 		say("Error occurred, please contact support")
 		logger.Printf("error occured in git-shell: %v", err)
-		logger.Fatalf("stderr: %v", stderr)
+		logger.Printf("stderr: %v", stderr)
+		os.Exit(1)
 	}
 
 	logger.Printf("done")
