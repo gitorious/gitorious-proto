@@ -104,7 +104,17 @@ func main() {
 
 	repoConfig, err := internalApi.GetRepoConfig(repoPath, username)
 	if err != nil {
-		say("Access denied or invalid repository path")
+		if httpErr, ok := err.(*api.HttpError); ok {
+			if httpErr.StatusCode == 403 {
+				say("Access denied")
+				logger.Fatalf("%v, aborting...", err)
+			} else if httpErr.StatusCode == 404 {
+				say("Invalid repository path")
+				logger.Fatalf("%v, aborting...", err)
+			}
+		}
+
+		say("Error occured, please contact support")
 		logger.Fatalf("%v, aborting...", err)
 	}
 
