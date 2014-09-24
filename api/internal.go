@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -20,8 +19,22 @@ type RepoConfig struct {
 	CustomUpdatePath      string `json:"custom_update_path"`
 }
 
+type User struct {
+	Username string `json:"username"`
+}
+
 type InternalApi interface {
 	GetRepoConfig(string, string) (*RepoConfig, error)
+	AuthenticateUser(string, string) (*User, error)
+}
+
+type HttpError struct {
+	Url        *url.URL
+	StatusCode int
+}
+
+func (e *HttpError) Error() string {
+	return fmt.Sprintf("got HTTP status %v for %v", e.StatusCode, e.Url)
 }
 
 type GitoriousInternalApi struct {
@@ -48,6 +61,32 @@ func (a *GitoriousInternalApi) GetRepoConfig(repoPath, username string) (*RepoCo
 	return &repoConfig, nil
 }
 
+func (a *GitoriousInternalApi) AuthenticateUser(username, password string) (*User, error) {
+	u, err := url.Parse(a.ApiUrl + "/authenticate")
+	if err != nil {
+		return nil, err
+	}
+
+	q := u.Query()
+	q.Set("username", username)
+	q.Set("password", password)
+	u.RawQuery = q.Encode()
+
+	var user User
+
+	if err := a.getJson(u, &user); err != nil {
+		if httpErr, ok := err.(*HttpError); ok {
+			if httpErr.StatusCode == 401 {
+				return nil, nil
+			}
+		}
+
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (a *GitoriousInternalApi) getJson(u *url.URL, target interface{}) error {
 	request, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
@@ -64,7 +103,7 @@ func (a *GitoriousInternalApi) getJson(u *url.URL, target interface{}) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("got status %v from %v", response.StatusCode, u))
+		return &HttpError{u, response.StatusCode}
 	}
 
 	decoder := json.NewDecoder(response.Body)
