@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Fake "git" command, used to check env variables and if it's called with
-# "http-backend" subcommand.
+# Fake "git http-backend" command (cgi script), used to check env variables.
 
 [[ $1 == "http-backend" ]] || exit 1
 
