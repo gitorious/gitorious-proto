@@ -136,8 +136,8 @@ func main() {
 
 	var (
 		reposRootPath  = flag.String("r", ".", "Directory containing git repositories")
-		internalApiUrl = flag.String("u", "http://localhost:3000/api/internal", "...")
-		addr           = flag.String("l", ":80", "Address/port to listen on")
+		internalApiUrl = flag.String("api-url", "http://localhost:3000/api/internal", "Gitorious internal API URL")
+		addr           = flag.String("l", ":6000", "Address/port to listen on")
 	)
 	flag.Parse()
 
