@@ -81,7 +81,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			username = user.Username
 		} else {
 			requestBasicAuth(w, "Invalid username or password")
-			logger.Printf("invalid credentials, disconnecting...")
+			logger.Printf("invalid credentials, requesting basic auth, disconnecting...")
 			return
 		}
 	}
@@ -98,7 +98,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if httpErr, ok := err.(*api.HttpError); ok {
 			if httpErr.StatusCode == 403 {
 				requestBasicAuth(w, "Access denied")
-				logger.Printf("%v, disconnecting...", err)
+				logger.Printf("%v, requesting basic auth, disconnecting...", err)
 				return
 			} else if httpErr.StatusCode == 404 {
 				say(w, http.StatusNotFound, "Invalid repository path")
