@@ -87,6 +87,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	logger.Printf("processing request: %v", req.URL.String())
+
 	repoPath, slug, err := parsePath(req.URL.Path)
 	if err != nil {
 		say(w, http.StatusBadRequest, "Invalid command")
