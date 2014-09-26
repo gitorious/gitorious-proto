@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"os"
 
 	"gitorious.org/gitorious/gitorious-proto/api"
@@ -12,6 +13,7 @@ func CreateEnv(protocol, username, repoPath string, repoConfig *api.RepoConfig) 
 	// used by hooks
 	env = append(env, "GITORIOUS_PROTO="+protocol)
 	env = append(env, "GITORIOUS_USER="+username)
+	env = append(env, fmt.Sprintf("GITORIOUS_REPOSITORY_ID=%v", repoConfig.RepositoryId))
 	env = append(env, "GITORIOUS_REPOSITORY_PATH="+repoPath)
 
 	if repoConfig.SshCloneUrl != "" {
