@@ -49,8 +49,8 @@ func getLogger(logfilePath, clientId string) common.Logger {
 	return &common.SessionLogger{targetLogger, clientId}
 }
 
-func createSshEnv(username, repoPath string, repoConfig *api.RepoConfig) []string {
-	return common.CreateEnv("ssh", username, repoPath, repoConfig)
+func createSshEnv(username string, repoConfig *api.RepoConfig) []string {
+	return common.CreateEnv("ssh", username, repoConfig)
 }
 
 func execGitShell(command string, env []string, stdin io.Reader, stdout io.Writer) (string, error) {
@@ -137,7 +137,7 @@ func main() {
 	}
 
 	gitShellCommand := formatGitShellCommand(command, fullRepoPath)
-	env := createSshEnv(username, repoPath, repoConfig)
+	env := createSshEnv(username, repoConfig)
 
 	logger.Printf(`invoking git-shell with command "%v"`, gitShellCommand)
 

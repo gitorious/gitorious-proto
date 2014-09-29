@@ -35,8 +35,8 @@ func parsePath(path string) (string, string, error) {
 	return matches[1], matches[2], nil
 }
 
-func createHttpEnv(username, repoPath string, repoConfig *api.RepoConfig, translatedPath string) []string {
-	env := common.CreateEnv("http", username, repoPath, repoConfig)
+func createHttpEnv(username string, repoConfig *api.RepoConfig, translatedPath string) []string {
+	env := common.CreateEnv("http", username, repoConfig)
 
 	env = append(env, "REMOTE_USER="+username) // enables "receive-pack" service (push) in git-http-backend
 	env = append(env, "GIT_HTTP_EXPORT_ALL=1") // enables clones without "git-daemon-export-ok" magic file
@@ -131,7 +131,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	translatedPath := fullRepoPath + slug
-	env := createHttpEnv(username, repoPath, repoConfig, translatedPath)
+	env := createHttpEnv(username, repoConfig, translatedPath)
 
 	logger.Printf(`invoking git-http-backend with translated path "%v"`, translatedPath)
 
