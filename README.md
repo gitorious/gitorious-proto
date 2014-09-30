@@ -48,9 +48,9 @@ They make the following HTTP request:
     GET $INTERNAL_API_URL/repo-config?username=<username>&repo_path=<public-repo-path>
 
 `$INTERNAL_API_URL` defaults to `http://localhost:3000/api/internal`, which is
-an API implemented in
-[gitorious/mainline](https://gitorious.org/gitorious/mainline) (the main
-Gitorious app).
+an API [implemented in
+gitorious/mainline](https://gitorious.org/gitorious/mainline/source/master:app/controllers/api/internal/repository_configurations_controller.rb)
+(the main Gitorious app).
 
 They expect 200 HTTP status code and the JSON response with the following
 information:
