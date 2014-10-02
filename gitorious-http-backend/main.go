@@ -57,9 +57,8 @@ func execGitHttpBackend(env []string, w http.ResponseWriter, req *http.Request) 
 }
 
 type Handler struct {
-	logger          *log.Logger
-	internalApi     api.InternalApi
-	repositoryStore common.RepositoryStore
+	logger      *log.Logger
+	internalApi api.InternalApi
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -121,16 +120,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	logger.Printf("real repo path: %v", repoConfig.RealPath)
+	logger.Printf("full repo path: %v", repoConfig.FullPath)
 
-	fullRepoPath, err := h.repositoryStore.GetFullRepoPath(repoConfig.RealPath)
-	if err != nil {
+	if !common.PreReceiveHookExists(repoConfig.FullPath) {
 		say(w, http.StatusInternalServerError, "Error occurred, please contact support")
-		logger.Printf("%v, disconnecting...", err)
+		logger.Printf("pre-receive hook for %v is missing or is not executable, aborting...", repoConfig.FullPath)
 		return
 	}
 
-	translatedPath := fullRepoPath + slug
+	translatedPath := repoConfig.FullPath + slug
 	env := createHttpEnv(username, repoConfig, translatedPath)
 
 	logger.Printf(`invoking git-http-backend with translated path "%v"`, translatedPath)
@@ -144,7 +142,6 @@ func main() {
 	syscall.Umask(0022) // set umask for pushes
 
 	var (
-		reposRootPath  = flag.String("r", ".", "Directory containing git repositories")
 		internalApiUrl = flag.String("api-url", "http://localhost:3000/api/internal", "Gitorious internal API URL")
 		addr           = flag.String("l", ":6000", "Address/port to listen on")
 	)
@@ -152,10 +149,9 @@ func main() {
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 	internalApi := &api.GitoriousInternalApi{*internalApiUrl}
-	repositoryStore := &common.GitoriousRepositoryStore{*reposRootPath}
 
 	logger.Printf("listening on %v", *addr)
 
-	http.Handle("/", &Handler{logger, internalApi, repositoryStore})
+	http.Handle("/", &Handler{logger, internalApi})
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }

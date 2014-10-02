@@ -57,20 +57,16 @@ func prependEnvPath(path string) {
 	os.Setenv("PATH", newPath)
 }
 
-type testInternalApi struct{}
+type testInternalApi struct {
+	FullRepoPath string
+}
 
 func (a *testInternalApi) AuthenticateUser(username, password string) (*api.User, error) {
 	return &api.User{username + ":" + password}, nil
 }
 
 func (a *testInternalApi) GetRepoConfig(repoPath, username string) (*api.RepoConfig, error) {
-	return &api.RepoConfig{RealPath: "real/path.git"}, nil
-}
-
-type testRepositoryStore struct{}
-
-func (s *testRepositoryStore) GetFullRepoPath(repoPath string) (string, error) {
-	return "/full/path/to/" + repoPath, nil
+	return &api.RepoConfig{FullPath: a.FullRepoPath}, nil
 }
 
 func TestHandler_ServeHTTP(t *testing.T) {
@@ -78,10 +74,11 @@ func TestHandler_ServeHTTP(t *testing.T) {
 	prependEnvPath(filepath.Join(cwd, "fixtures", "git-http-backend"))
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
-	internalApi := &testInternalApi{}
-	repositoryStore := &testRepositoryStore{}
 
-	handler := &Handler{logger, internalApi, repositoryStore}
+	fullRepoPath := filepath.Join(cwd, "..", "common", "fixtures", "repos", "repo-with-hook.git")
+	internalApi := &testInternalApi{fullRepoPath}
+
+	handler := &Handler{logger, internalApi}
 
 	req, _ := http.NewRequest("GET", "http://localhost/foo/bar.git/info/refs?service=git-upload-pack", nil)
 	req.SetBasicAuth("sickill", "xxx")
@@ -93,11 +90,12 @@ func TestHandler_ServeHTTP(t *testing.T) {
 		t.Errorf("expected status 200, got %v", w.Code)
 	}
 
-	expectedBody := `GIT_HTTP_EXPORT_ALL=1
-PATH_TRANSLATED=/full/path/to/real/path.git/info/refs
+	expectedBody := fmt.Sprintf(`GIT_HTTP_EXPORT_ALL=1
+PATH_TRANSLATED=%v/info/refs
 QUERY_STRING=service=git-upload-pack
 REMOTE_USER=sickill:xxx
-`
+`, fullRepoPath)
+
 	actualBody := w.Body.String()
 
 	if actualBody != expectedBody {

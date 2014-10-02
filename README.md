@@ -49,10 +49,10 @@ Gitorious API for authorization and repository path resolving.
 
 They make the following HTTP request:
 
-    GET $INTERNAL_API_URL/repo-config?username=<username>&repo_path=<public-repo-path>
+    GET $GITORIOUS_INTERNAL_API_URL/repo-config?username=<username>&repo_path=<public-repo-path>
 
-`$INTERNAL_API_URL` defaults to `http://localhost:3000/api/internal`, which is
-an API [implemented in
+`$GITORIOUS_INTERNAL_API_URL` defaults to `http://localhost:3000/api/internal`,
+which is an API [implemented in
 gitorious/mainline](https://gitorious.org/gitorious/mainline/source/master:app/controllers/api/internal/repository_configurations_controller.rb)
 (the main Gitorious app).
 
@@ -60,8 +60,8 @@ When user has read access to the repository HTTP status code 200 is expected
 with the JSON body including the following information:
 
     {
-      id: 1                       # repository id
-      real_path: "real/path.git"  # real path on disk, relative to repositories root
+      id: 1                        # repository id
+      full_path: "/full/path.git"  # full absolute path on disk
 
       ssh_clone_url: "git@...."      # ssh clone URL for this repository (if ssh access enabled)
       git_clone_url: "git://...."    # git clone URL for this repository (if git access enabled)

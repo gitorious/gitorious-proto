@@ -72,13 +72,11 @@ func main() {
 	syscall.Umask(0022) // set umask for pushes
 
 	clientId := common.Getenv("SSH_CLIENT", "local")
-	logfilePath := common.Getenv("LOGFILE", "/tmp/gitorious-shell.log")
-	reposRootPath := common.Getenv("REPOSITORIES_ROOT", "/var/www/gitorious/repositories")
-	internalApiUrl := common.Getenv("INTERNAL_API_URL", "http://localhost:3000/api/internal")
+	logfilePath := common.Getenv("LOGFILE", "/var/log/gitorious/gitorious-shell.log")
+	internalApiUrl := common.Getenv("GITORIOUS_INTERNAL_API_URL", "http://localhost:3000/api/internal")
 
 	logger := getLogger(logfilePath, clientId)
 	internalApi := &api.GitoriousInternalApi{internalApiUrl}
-	repositoryStore := &common.GitoriousRepositoryStore{reposRootPath}
 
 	logger.Printf("client connected")
 
@@ -127,16 +125,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger.Printf("real repo path: %v", repoConfig.RealPath)
+	logger.Printf("full repo path: %v", repoConfig.FullPath)
 
-	fullRepoPath, err := repositoryStore.GetFullRepoPath(repoConfig.RealPath)
-	if err != nil {
+	if !common.PreReceiveHookExists(repoConfig.FullPath) {
 		say("Error occurred, please contact support")
-		logger.Printf("%v, aborting...", err)
+		logger.Printf("pre-receive hook for %v is missing or is not executable, aborting...", repoConfig.FullPath)
 		os.Exit(1)
 	}
 
-	gitShellCommand := formatGitShellCommand(command, fullRepoPath)
+	gitShellCommand := formatGitShellCommand(command, repoConfig.FullPath)
 	env := createSshEnv(username, repoConfig)
 
 	logger.Printf(`invoking git-shell with command "%v"`, gitShellCommand)
