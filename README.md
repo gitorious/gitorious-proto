@@ -11,6 +11,10 @@ These tools embrace existing git commands (like `git-shell` and
   the real paths on disk
 * logging.
 
+Normally you don't need to build or download these tools - they are put in
+proper place in a new Gitorious installation by
+[Gitorious installer](https://gitorious.org/gitorious/ce-installer).
+
 ## Supported protocols
 
 At the moment there are 2 protocols implemented as part of gitorious-proto: ssh
@@ -52,8 +56,8 @@ an API [implemented in
 gitorious/mainline](https://gitorious.org/gitorious/mainline/source/master:app/controllers/api/internal/repository_configurations_controller.rb)
 (the main Gitorious app).
 
-They expect 200 HTTP status code and the JSON response with the following
-information:
+When user has read access to the repository HTTP status code 200 is expected
+with the JSON body including the following information:
 
     {
       id: 1                       # repository id
@@ -68,7 +72,18 @@ information:
       custom_update_path: "/absolute/hook/path"        # if hook exists
     }
 
-Any non 200 status will deny the access to the requested repository.
+When user doesn't have read access to the repository 403 status is expected.
+When `repo_path` is invalid 404 status is expected.
+
+Any non 200 HTTP status will deny the access to the requested repository.
+
+## Development
+
+`gitorious-proto` is written in Go language and you need a working Go
+environment to run and compile the code. Once it's there clone the repository:
+
+    mkdir -p $GOPATH/src/gitorious.org/gitorious
+    git clone https://gitorious.org/gitorious/gitorious-proto.git $GOPATH/src/gitorious.org/gitorious/gitorious-proto
 
 ## License
 
