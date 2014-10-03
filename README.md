@@ -15,6 +15,14 @@ Normally you don't need to build or download these tools - they are put in
 proper place in a new Gitorious installation by
 [Gitorious installer](https://gitorious.org/gitorious/ce-installer).
 
+`gitorious-proto` is written in Go (`gitorious-shell`,
+`gitorious-http-backend`) and bash (hooks) to limit runtime dependencies
+required on Gitorious hosts. The main Gitorious web application, as well as
+background job processor and search daemon are running inside Docker
+containers. That means the only software Gitorious needs on a host is bash,
+curl and Docker (as Go binaries are static and have zero dependencies). This
+makes deployment and updates very straightforward.
+
 ## Supported protocols
 
 At the moment there are 2 protocols implemented as part of gitorious-proto: ssh
@@ -77,13 +85,43 @@ When `repo_path` is invalid 404 status is expected.
 
 Any non 200 HTTP status will deny the access to the requested repository.
 
+## Hooks
+
+`hooks` directory contains all git hooks that Gitorious uses for authorizing
+and processing pushes.
+
+### pre-receive
+
+TODO: describe
+
+    GET $GITORIOUS_INTERNAL_API_URL/hooks/pre-receive?...
+
+### update
+
+`update` hook is currently not used by Gitorious for anything special. The only
+thing it does is delegating to the custom update hook (if any).
+
+### post-update
+
+`post-update` hook's job is calling `git update-server-info` in order to
+prepare a packed repository for use over dumb transports.
+
+### post-receive
+
+TODO: describe
+
+    GET $GITORIOUS_INTERNAL_API_URL/hooks/post-receive?...
+
 ## Development
 
-`gitorious-proto` is written in Go language and you need a working Go
-environment to run and compile the code. Once it's there clone the repository:
+As `gitorious-proto` is mostly written in Go language (except hooks) you need a
+working Go environment to run and compile the code. Once it's there clone the
+repository like this:
 
     mkdir -p $GOPATH/src/gitorious.org/gitorious
     git clone https://gitorious.org/gitorious/gitorious-proto.git $GOPATH/src/gitorious.org/gitorious/gitorious-proto
+
+You don't need proper Go environment to work hooks though.
 
 ## License
 
