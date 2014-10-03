@@ -121,7 +121,7 @@ repository like this:
     mkdir -p $GOPATH/src/gitorious.org/gitorious
     git clone https://gitorious.org/gitorious/gitorious-proto.git $GOPATH/src/gitorious.org/gitorious/gitorious-proto
 
-You don't need proper Go environment to work hooks though.
+You don't need proper Go environment to work on hooks though.
 
 ## License
 
