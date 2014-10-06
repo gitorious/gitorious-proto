@@ -20,6 +20,12 @@
 
 set -e # exit on error immediately
 
+# If GITORIOUS_PROTO is empty it's a local push.
+# Local pushes come from the app itself (merge request update from UI etc).
+if [ -z "$GITORIOUS_PROTO" ]; then
+  exit 0 # exit with success, skipping custom hook
+fi
+
 INTERNAL_API_URL=${INTERNAL_API_URL:-"http://localhost:3000/api/internal"}
 
 notify() {
