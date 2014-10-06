@@ -96,7 +96,7 @@ The following environment variables are set by `gitorious-shell` and
 * `GITORIOUS_PROTO` - set either to `ssh` or `http`
 * `GITORIOUS_USER` - set to username of a user requesting pull/push
 * `GITORIOUS_REPOSITORY_ID` - set to an ID of a Gitorious repository from/to which
-  user pull/pushes
+  user pulls/pushes
 
 ### pre-receive
 
@@ -111,7 +111,7 @@ where `refname` is set to the name of a ref being pushed to; `oldsha` and
 `mergebase` set to the best common ancestor between `oldsha` and `newsha` (see
 http://git-scm.com/docs/git-merge-base).
 
-If any of the requests result in HTTP status different than 200 the push is
+If any of the requests result in HTTP status other than 200 the push is
 rejected.
 
 ### update
