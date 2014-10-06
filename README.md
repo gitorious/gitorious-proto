@@ -68,7 +68,7 @@ When user has read access to the repository HTTP status code 200 is expected
 with the JSON body including the following information:
 
     {
-      id: 1                        # repository id
+      repository_id: 1
       full_path: "/full/path.git"  # full absolute path on disk
 
       ssh_clone_url: "git@...."      # ssh clone URL for this repository (if ssh access enabled)

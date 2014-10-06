@@ -8,7 +8,7 @@ import (
 )
 
 type RepoConfig struct {
-	RepositoryId int    `json:"id"`
+	RepositoryId int    `json:"repository_id"`
 	FullPath     string `json:"full_path"`
 
 	SshCloneUrl  string `json:"ssh_clone_url"`
