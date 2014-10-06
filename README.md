@@ -90,11 +90,29 @@ Any non 200 HTTP status will deny the access to the requested repository.
 `hooks` directory contains all git hooks that Gitorious uses for authorizing
 and processing pushes.
 
+The following environment variables are set by `gitorious-shell` and
+`gitorious-http-backend` to be used by hooks:
+
+* `GITORIOUS_PROTO` - set either to `ssh` or `http`
+* `GITORIOUS_USER` - set to username of a user requesting pull/push
+* `GITORIOUS_REPOSITORY_ID` - set to an ID of a Gitorious repository from/to which
+  user pull/pushes
+
 ### pre-receive
 
-TODO: describe
+Gitorious `pre-receive` hook acts as a guard, authorizing all push operations.
 
-    GET $GITORIOUS_INTERNAL_API_URL/hooks/pre-receive?...
+For each refspec line passed to its stdin it makes the following HTTP request:
+
+    GET $GITORIOUS_INTERNAL_API_URL/hooks/pre-receive?username=$GITORIOUS_USER&repository_id=$GITORIOUS_REPOSITORY_ID&refname=<refname>&oldsha=<oldsha>&newsha=<newsha>&mergebase=<mergebase>
+
+where `refname` is set to the name of a ref being pushed to; `oldsha` and
+`newsha` set respectively to old and new sha values for the updated ref;
+`mergebase` set to the best common ancestor between `oldsha` and `newsha` (see
+http://git-scm.com/docs/git-merge-base).
+
+If any of the requests result in HTTP status different than 200 the push is
+rejected.
 
 ### update
 
