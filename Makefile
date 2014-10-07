@@ -2,6 +2,9 @@
 
 build: test build-ssh build-http
 
+deps:
+	go get -d -v ./...
+
 test:
 	go test ./...
 
