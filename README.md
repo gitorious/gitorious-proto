@@ -1,5 +1,7 @@
 # Gitorious Protocol Handlers
 
+[![Build Status](https://travis-ci.org/gitorious/gitorious-proto.svg?branch=master)](https://travis-ci.org/gitorious/gitorious-proto)
+
 This repository contains Gitorious protocol handlers - utilities that provide
 access (pull and push) to Gitorious repositories over various protocols.
 
