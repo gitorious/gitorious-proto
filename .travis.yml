@@ -11,3 +11,7 @@ script: make test
 matrix:
   allow_failures:
     - go: tip
+
+notifications:
+  slack:
+    secure: IXaOhnCq7GHFQjGWxCv+XPOKRLn9GWWmUhZNaa97Fbrtfz4BL1oNKJ3Cz+7hlj4FY2qRpiyklLJxNxLcWLdR5n1t2uOYZMT05+YNpanRQO2mKANhZlFNle840FAAGU9tLgnkoubY4NcAz9KCeucqz/Wd7vIoVkBEnd9l5f/WwTU=
